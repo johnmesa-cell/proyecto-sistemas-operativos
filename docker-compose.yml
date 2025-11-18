@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  db-master:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    # ports:                     # comenta la línea ports si no la necesitas
+    #   - "${MASTER_PORT}:3306"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_master_data:/var/lib/mysql
+    command: --server-id=1 --log-bin=mysql-bin --binlog-do-db=curador_db
+
+  db-slave:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: curador_db
+    depends_on:
+      - db-master
+    # ports:
+    #   - "${SLAVE_PORT}:3306"
+    volumes:
+      - ./db/replica-setup.sql:/docker-entrypoint-initdb.d/replica-setup.sql
+      - db_slave_data:/var/lib/mysql
+    command: --server-id=2 --relay-log=relay-bin --read-only=1
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    # ports:
+    #   - "${PHPMYADMIN_PORT}:80"
+    environment:
+      PMA_HOSTS: "db-master,db-slave"
+      PMA_USER: ${PHPMYADMIN_USER}
+      PMA_PASSWORD: ${PHPMYADMIN_PASS}
+    depends_on:
+      - db-master
+      - db-slave
+
+volumes:
+  db_master_data:
+  db_slave_data:
