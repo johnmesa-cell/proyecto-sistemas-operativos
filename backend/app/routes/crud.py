@@ -6,7 +6,7 @@ router = APIRouter(prefix="/api/crud", tags=["CRUD"])
 
 @router.get("/")
 def get_items():
-    with engine_slave.connect() as conn:
+    with engine_master.connect() as conn:
         result = conn.execute(text("SELECT * FROM items"))
         items = [dict(row._mapping) for row in result]  # ← cambio clave
     return items
