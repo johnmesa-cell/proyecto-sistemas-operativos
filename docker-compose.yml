@@ -29,7 +29,7 @@ services:
     image: phpmyadmin
     restart: always
     ports:
-      - "8080:80"
+      - "8081:80"
     environment:
       PMA_HOSTS: "db-master,db-slave"
       PMA_USER: root
@@ -39,7 +39,7 @@ services:
       - db-slave
 
   backend:
-    build: ./backend/app
+    build: ./backend
     container_name: backend-app
     ports:
       - "8000:8000"
@@ -50,6 +50,18 @@ services:
       DB_PASS: 1234
     depends_on:
       - db-master
+
+  frontend:
+    build: ./frontend
+    container_name: frontend-app
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:8000
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
 
 volumes:
   db_master_data:
