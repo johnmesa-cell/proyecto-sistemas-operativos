@@ -8,8 +8,7 @@ router = APIRouter(prefix="/api/crud", tags=["CRUD"])
 def get_items():
     with engine_slave.connect() as conn:
         result = conn.execute(text("SELECT * FROM items"))
-        # Mover esta línea DENTRO del bloque with
-        items = [dict(row._mapping) for row in result]
+        items = [dict(row._mapping) for row in result]  # ← cambio clave
     return items
 
 @router.post("/")
