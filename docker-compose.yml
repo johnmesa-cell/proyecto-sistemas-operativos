@@ -5,8 +5,8 @@ services:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 1234        # O usa ${MYSQL_ROOT_PASSWORD} si tienes un archivo .env
-      MYSQL_DATABASE: curador_db       # O usa ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: curador_db
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db_master_data:/var/lib/mysql
@@ -32,16 +32,14 @@ services:
       - "8080:80"
     environment:
       PMA_HOSTS: "db-master,db-slave"
-      PMA_USER: root                 # Pon igual que root si no tienes variables en .env
+      PMA_USER: root
       PMA_PASSWORD: 1234
     depends_on:
       - db-master
       - db-slave
 
   backend:
-    build:
-      context: ./backend/app
-      dockerfile: Dockerfile
+    build: ./backend/app
     container_name: backend-app
     ports:
       - "8000:8000"
