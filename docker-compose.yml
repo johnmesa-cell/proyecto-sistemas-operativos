@@ -5,10 +5,8 @@ services:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-    # ports:                     # comenta la línea ports si no la necesitas
-    #   - "${MASTER_PORT}:3306"
+      MYSQL_ROOT_PASSWORD: 1234        # O usa ${MYSQL_ROOT_PASSWORD} si tienes un archivo .env
+      MYSQL_DATABASE: curador_db       # O usa ${MYSQL_DATABASE}
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db_master_data:/var/lib/mysql
@@ -18,12 +16,10 @@ services:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: curador_db
     depends_on:
       - db-master
-    # ports:
-    #   - "${SLAVE_PORT}:3306"
     volumes:
       - ./db/replica-setup.sql:/docker-entrypoint-initdb.d/replica-setup.sql
       - db_slave_data:/var/lib/mysql
@@ -32,15 +28,30 @@ services:
   phpmyadmin:
     image: phpmyadmin
     restart: always
-    # ports:
-    #   - "${PHPMYADMIN_PORT}:80"
+    ports:
+      - "8080:80"
     environment:
       PMA_HOSTS: "db-master,db-slave"
-      PMA_USER: ${PHPMYADMIN_USER}
-      PMA_PASSWORD: ${PHPMYADMIN_PASS}
+      PMA_USER: root                 # Pon igual que root si no tienes variables en .env
+      PMA_PASSWORD: 1234
     depends_on:
       - db-master
       - db-slave
+
+  backend:
+    build:
+      context: ./backend/app
+      dockerfile: Dockerfile
+    container_name: backend-app
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db-master
+      DB_NAME: curador_db
+      DB_USER: root
+      DB_PASS: 1234
+    depends_on:
+      - db-master
 
 volumes:
   db_master_data:
