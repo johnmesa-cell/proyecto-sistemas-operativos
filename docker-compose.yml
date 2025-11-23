@@ -21,6 +21,7 @@ services:
     depends_on:
       - db-master
     volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./db/replica-setup.sql:/docker-entrypoint-initdb.d/replica-setup.sql
       - db_slave_data:/var/lib/mysql
     command: --server-id=2 --relay-log=relay-bin --read-only=1
